@@ -48,12 +48,6 @@ export default function Heatmap({ records }: Props) {
             if (!value) return 'color-empty';
             return getColorClass(value.count);
           }}
-          tooltipDataAttrs={(value: HeatmapValue | undefined) => {
-            if (!value || !value.date) return { 'data-tip': '' };
-            const h = Math.floor(value.count / 60);
-            const m = value.count % 60;
-            return { 'data-tip': `${value.date}: ${h}時間${m}分` };
-          }}
           showWeekdayLabels
         />
       </div>

@@ -53,7 +53,7 @@ export default function MonthlyChart({ records, year, month }: Props) {
             <Tooltip
               contentStyle={{ background: '#1f2937', border: 'none', borderRadius: 8 }}
               labelStyle={{ color: '#f3f4f6' }}
-              formatter={(v: number) => [`${v}h`, '学習時間']}
+              formatter={(v) => [`${v}h`, '学習時間']}
             />
             <Bar dataKey="hours" radius={[4, 4, 0, 0]}>
               {data.map((_, i) => (
