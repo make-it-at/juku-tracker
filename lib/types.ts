@@ -1,4 +1,4 @@
-export type Facility = '塾' | 'セントラルフィットネス';
+export type Facility = 'atama+塾' | 'セントラルフィットネス';
 
 export type TrackingRecord = {
   id: string;

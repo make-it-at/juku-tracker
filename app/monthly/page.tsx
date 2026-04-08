@@ -7,10 +7,10 @@ import RecordTable from '@/components/RecordTable';
 import Link from 'next/link';
 
 type Filter = '全体' | Facility;
-const FILTERS: Filter[] = ['全体', '塾', 'セントラルフィットネス'];
+const FILTERS: Filter[] = ['全体', 'atama+塾', 'セントラルフィットネス'];
 const FILTER_LABELS: Record<Filter, string> = {
   '全体': '全体',
-  '塾': '📚 塾',
+  'atama+塾': '📚 塾',
   'セントラルフィットネス': '🏋️ ジム',
 };
 
@@ -37,7 +37,7 @@ export default function MonthlyPage() {
     ? allRecords
     : allRecords.filter((r) => r.facility === filter);
 
-  const jukuRecords = allRecords.filter((r) => r.facility === '塾');
+  const jukuRecords = allRecords.filter((r) => r.facility === 'atama+塾');
   const gymRecords  = allRecords.filter((r) => r.facility === 'セントラルフィットネス');
   const jukuMin = jukuRecords.reduce((s, r) => s + r.durationMin, 0);
 

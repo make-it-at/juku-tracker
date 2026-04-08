@@ -45,7 +45,7 @@ export default function Heatmap({ records }: Props) {
     for (const r of records) {
       if (!r.date) continue;
       const existing = map.get(r.date) ?? { date: r.date, jukuMin: 0, gymCount: 0 };
-      if (r.facility === '塾') existing.jukuMin += r.durationMin;
+      if (r.facility === 'atama+塾') existing.jukuMin += r.durationMin;
       if (r.facility === 'セントラルフィットネス') existing.gymCount += 1;
       map.set(r.date, existing);
     }

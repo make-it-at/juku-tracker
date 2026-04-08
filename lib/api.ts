@@ -37,7 +37,7 @@ function parseRecord(page: PageObjectResponse): TrackingRecord {
   };
 
   const facilityRaw = props['施設'] ? getSelect(props['施設']) : '';
-  const facility: Facility = facilityRaw === 'セントラルフィットネス' ? 'セントラルフィットネス' : '塾';
+  const facility: Facility = facilityRaw === 'セントラルフィットネス' ? 'セントラルフィットネス' : 'atama+塾';
 
   return {
     id: page.id,

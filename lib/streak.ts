@@ -65,7 +65,7 @@ export function calcStreak(records: TrackingRecord[]): number {
  */
 export function calcMonthlyJukuHours(records: TrackingRecord[], year: number, month: number): number {
   const filtered = records.filter((r) => {
-    if (!r.date || r.facility !== '塾') return false;
+    if (!r.date || r.facility !== 'atama+塾') return false;
     const [y, m] = r.date.split('-').map(Number);
     return y === year && m === month;
   });
@@ -88,7 +88,7 @@ export function calcMonthlyGymCount(records: TrackingRecord[], year: number, mon
  */
 export function calcTotalHours(records: TrackingRecord[]): number {
   return records
-    .filter((r) => r.facility === '塾')
+    .filter((r) => r.facility === 'atama+塾')
     .reduce((sum, r) => sum + r.durationMin, 0) / 60;
 }
 

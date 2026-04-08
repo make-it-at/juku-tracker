@@ -8,10 +8,10 @@ const withPWA = require('next-pwa')({
 });
 
 const nextConfig: NextConfig = {
-  // Asia/Tokyo タイムゾーン固定
   env: {
     TZ: 'Asia/Tokyo',
   },
+  outputFileTracingRoot: require('path').join(__dirname),
 };
 
 export default withPWA(nextConfig);

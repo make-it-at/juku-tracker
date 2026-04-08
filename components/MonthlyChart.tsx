@@ -28,14 +28,14 @@ export default function MonthlyChart({ records, year, month }: Props) {
       if (y !== year || m !== month) continue;
       const day = r.date.split('-')[2];
       const existing = map.get(day) ?? { day, juku: 0, gym: 0 };
-      if (r.facility === '塾') existing.juku = Math.round((existing.juku * 60 + r.durationMin) / 60 * 10) / 10;
+      if (r.facility === 'atama+塾') existing.juku = Math.round((existing.juku * 60 + r.durationMin) / 60 * 10) / 10;
       if (r.facility === 'セントラルフィットネス') existing.gym = 1;
       map.set(day, existing);
     }
     return Array.from(map.values()).sort((a, b) => a.day.localeCompare(b.day));
   }, [records, year, month]);
 
-  const hasJuku = records.some((r) => r.facility === '塾');
+  const hasJuku = records.some((r) => r.facility === 'atama+塾');
   const hasGym  = records.some((r) => r.facility === 'セントラルフィットネス');
 
   return (

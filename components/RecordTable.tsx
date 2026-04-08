@@ -9,7 +9,7 @@ type Props = {
 const facilityBadge = (f: string) =>
   f === 'セントラルフィットネス'
     ? <span className="text-xs bg-blue-600 text-white rounded px-1.5 py-0.5">ジム</span>
-    : <span className="text-xs bg-green-700 text-white rounded px-1.5 py-0.5">塾</span>;
+    : <span className="text-xs bg-green-700 text-white rounded px-1.5 py-0.5">atama+塾</span>;
 
 export default function RecordTable({ records }: Props) {
   if (records.length === 0) {
