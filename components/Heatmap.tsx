@@ -2,24 +2,37 @@
 
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
-import { JukuRecord } from '@/lib/types';
+import { TrackingRecord } from '@/lib/types';
 import { useMemo } from 'react';
 
 type Props = {
-  records: JukuRecord[];
+  records: TrackingRecord[];
 };
 
-type HeatmapValue = {
+type DayStats = {
   date: string;
-  count: number; // 分
+  jukuMin: number;
+  gymCount: number;
 };
 
-function getColorClass(minutes: number): string {
-  if (minutes === 0) return 'color-empty';
-  if (minutes <= 60) return 'color-scale-1';
-  if (minutes <= 120) return 'color-scale-2';
-  if (minutes <= 180) return 'color-scale-3';
-  return 'color-scale-4';
+// 色クラス決定ロジック
+// 塾のみ=緑、ジムのみ=青、両方=紫
+function getColorClass(stats: DayStats): string {
+  const hasJuku = stats.jukuMin > 0;
+  const hasGym = stats.gymCount > 0;
+
+  if (hasJuku && hasGym) return 'color-both';
+
+  if (hasJuku) {
+    if (stats.jukuMin <= 60)  return 'color-juku-1';
+    if (stats.jukuMin <= 120) return 'color-juku-2';
+    if (stats.jukuMin <= 180) return 'color-juku-3';
+    return 'color-juku-4';
+  }
+
+  if (hasGym) return 'color-gym';
+
+  return 'color-empty';
 }
 
 export default function Heatmap({ records }: Props) {
@@ -27,18 +40,21 @@ export default function Heatmap({ records }: Props) {
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
-  const values: HeatmapValue[] = useMemo(() => {
-    const map = new Map<string, number>();
+  const values = useMemo(() => {
+    const map = new Map<string, DayStats>();
     for (const r of records) {
       if (!r.date) continue;
-      map.set(r.date, (map.get(r.date) ?? 0) + r.durationMin);
+      const existing = map.get(r.date) ?? { date: r.date, jukuMin: 0, gymCount: 0 };
+      if (r.facility === '塾') existing.jukuMin += r.durationMin;
+      if (r.facility === 'セントラルフィットネス') existing.gymCount += 1;
+      map.set(r.date, existing);
     }
-    return Array.from(map.entries()).map(([date, count]) => ({ date, count }));
+    return Array.from(map.values());
   }, [records]);
 
   return (
     <div className="bg-gray-800 rounded-2xl p-4 shadow-lg">
-      <h3 className="text-white text-sm font-medium mb-3 opacity-80">通塾ヒートマップ（直近3ヶ月）</h3>
+      <h3 className="text-white text-sm font-medium mb-3 opacity-80">通所ヒートマップ（直近3ヶ月）</h3>
       <div className="overflow-x-auto">
         <CalendarHeatmap
           startDate={threeMonthsAgo}
@@ -46,26 +62,38 @@ export default function Heatmap({ records }: Props) {
           values={values}
           classForValue={(value) => {
             if (!value) return 'color-empty';
-            return getColorClass(value.count);
+            return getColorClass(value as DayStats);
           }}
           showWeekdayLabels
         />
       </div>
-      <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
-        <span>少ない</span>
-        <div className="flex gap-1">
-          {['bg-gray-700', 'bg-green-900', 'bg-green-600', 'bg-green-500', 'bg-green-400'].map((c, i) => (
-            <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />
-          ))}
+      {/* 凡例 */}
+      <div className="flex flex-wrap gap-3 mt-3 text-xs text-gray-400">
+        <div className="flex items-center gap-1">
+          <div className="flex gap-0.5">
+            {['bg-green-900','bg-green-600','bg-green-500','bg-green-400'].map((c,i) => (
+              <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />
+            ))}
+          </div>
+          <span>塾（時間↑）</span>
         </div>
-        <span>多い</span>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-sm bg-blue-500" />
+          <span>ジム</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-sm bg-purple-500" />
+          <span>両方</span>
+        </div>
       </div>
       <style>{`
-        .react-calendar-heatmap .color-empty { fill: #374151; }
-        .react-calendar-heatmap .color-scale-1 { fill: #14532d; }
-        .react-calendar-heatmap .color-scale-2 { fill: #16a34a; }
-        .react-calendar-heatmap .color-scale-3 { fill: #22c55e; }
-        .react-calendar-heatmap .color-scale-4 { fill: #4ade80; }
+        .react-calendar-heatmap .color-empty   { fill: #374151; }
+        .react-calendar-heatmap .color-juku-1  { fill: #14532d; }
+        .react-calendar-heatmap .color-juku-2  { fill: #16a34a; }
+        .react-calendar-heatmap .color-juku-3  { fill: #22c55e; }
+        .react-calendar-heatmap .color-juku-4  { fill: #4ade80; }
+        .react-calendar-heatmap .color-gym     { fill: #3b82f6; }
+        .react-calendar-heatmap .color-both    { fill: #a855f7; }
         .react-calendar-heatmap text { fill: #9ca3af; font-size: 8px; }
       `}</style>
     </div>

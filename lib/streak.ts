@@ -1,11 +1,9 @@
-import { JukuRecord } from './types';
+import { TrackingRecord } from './types';
 
-// 日付文字列 YYYY-MM-DD を JST で Date に変換
 function toJSTDate(dateStr: string): Date {
   return new Date(`${dateStr}T00:00:00+09:00`);
 }
 
-// 今日の日付（JST）
 function todayJST(): Date {
   const now = new Date();
   const jst = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
@@ -18,19 +16,19 @@ function diffDays(a: Date, b: Date): number {
 }
 
 /**
- * 通塾日（ユニーク）を降順で返す
+ * 通塾・通ジム日（ユニーク）を降順で返す（施設問わず合算）
  */
-export function getAttendanceDates(records: JukuRecord[]): string[] {
+export function getAttendanceDates(records: TrackingRecord[]): string[] {
   const dates = new Set(records.map((r) => r.date).filter(Boolean));
   return Array.from(dates).sort((a, b) => b.localeCompare(a));
 }
 
 /**
- * 連続通塾日数を計算する。
- * - 今日 or 昨日に通塾していれば継続カウント
- * - 土日はスキップ可能（平日ベースでカウント）
+ * 連続通所日数（塾 or ジムどちらかで継続）
+ * - 今日 or 昨日にどちらかに行っていれば継続
+ * - 土日はスキップ可能
  */
-export function calcStreak(records: JukuRecord[]): number {
+export function calcStreak(records: TrackingRecord[]): number {
   const dates = getAttendanceDates(records);
   if (dates.length === 0) return 0;
 
@@ -38,7 +36,6 @@ export function calcStreak(records: JukuRecord[]): number {
   const latestDate = toJSTDate(dates[0]);
   const daysSinceLatest = diffDays(today, latestDate);
 
-  // 最後の通塾が2日以上前（土日を考慮しても切れている）
   if (daysSinceLatest > 3) return 0;
 
   let streak = 1;
@@ -47,22 +44,14 @@ export function calcStreak(records: JukuRecord[]): number {
     const curr = toJSTDate(dates[i]);
     const diff = diffDays(prev, curr);
 
-    // 1日差はそのまま継続
-    if (diff === 1) {
-      streak++;
-      continue;
-    }
+    if (diff === 1) { streak++; continue; }
 
-    // 土日スキップ: 差が2〜3日で間に土日が含まれる場合は継続
     if (diff <= 3) {
       const skipped = Array.from({ length: diff - 1 }, (_, k) => {
         const d = new Date(curr.getTime() + (k + 1) * 24 * 60 * 60 * 1000);
-        return d.getDay(); // 0=日, 6=土
+        return d.getDay();
       });
-      if (skipped.every((day) => day === 0 || day === 6)) {
-        streak++;
-        continue;
-      }
+      if (skipped.every((day) => day === 0 || day === 6)) { streak++; continue; }
     }
 
     break;
@@ -72,22 +61,36 @@ export function calcStreak(records: JukuRecord[]): number {
 }
 
 /**
- * 今月の累計時間（時間）を返す
+ * 今月の塾累計時間（時間）
  */
-export function calcMonthlyHours(records: JukuRecord[], year: number, month: number): number {
+export function calcMonthlyJukuHours(records: TrackingRecord[], year: number, month: number): number {
   const filtered = records.filter((r) => {
-    if (!r.date) return false;
+    if (!r.date || r.facility !== '塾') return false;
     const [y, m] = r.date.split('-').map(Number);
     return y === year && m === month;
   });
-  const totalMin = filtered.reduce((sum, r) => sum + r.durationMin, 0);
-  return totalMin / 60;
+  return filtered.reduce((sum, r) => sum + r.durationMin, 0) / 60;
 }
 
 /**
- * 全期間の累計時間（時間）を返す
+ * 今月のセントラル通所回数
  */
-export function calcTotalHours(records: JukuRecord[]): number {
-  const totalMin = records.reduce((sum, r) => sum + r.durationMin, 0);
-  return totalMin / 60;
+export function calcMonthlyGymCount(records: TrackingRecord[], year: number, month: number): number {
+  return records.filter((r) => {
+    if (!r.date || r.facility !== 'セントラルフィットネス') return false;
+    const [y, m] = r.date.split('-').map(Number);
+    return y === year && m === month;
+  }).length;
 }
+
+/**
+ * 全期間の塾累計時間（時間）— レベル計算用
+ */
+export function calcTotalHours(records: TrackingRecord[]): number {
+  return records
+    .filter((r) => r.facility === '塾')
+    .reduce((sum, r) => sum + r.durationMin, 0) / 60;
+}
+
+// 後方互換
+export const calcMonthlyHours = calcMonthlyJukuHours;

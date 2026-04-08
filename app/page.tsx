@@ -1,5 +1,5 @@
 import { getAllRecords } from '@/lib/api';
-import { calcStreak, calcMonthlyHours, calcTotalHours } from '@/lib/streak';
+import { calcStreak, calcMonthlyJukuHours, calcMonthlyGymCount, calcTotalHours } from '@/lib/streak';
 import { getCurrentLevel } from '@/lib/levels';
 import StreakCard from '@/components/StreakCard';
 import Heatmap from '@/components/Heatmap';
@@ -17,7 +17,8 @@ export default async function DashboardPage() {
   const month = now.getMonth() + 1;
 
   const streak = calcStreak(records);
-  const monthlyHours = calcMonthlyHours(records, year, month);
+  const jukuHours = calcMonthlyJukuHours(records, year, month);
+  const gymCount = calcMonthlyGymCount(records, year, month);
   const totalHours = calcTotalHours(records);
   const currentLevel = getCurrentLevel(totalHours);
 
@@ -28,7 +29,7 @@ export default async function DashboardPage() {
         <header className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-black tracking-tight">塾トラッカー</h1>
-            <p className="text-gray-400 text-xs mt-0.5">遼都の通塾ダッシュボード</p>
+            <p className="text-gray-400 text-xs mt-0.5">遼都の通塾・通ジムダッシュボード</p>
           </div>
           <div className="text-right">
             <div className="text-2xl">{currentLevel.badge}</div>
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
 
         {/* 月間プログレス */}
         <section className="mb-4">
-          <MonthlyProgress currentHours={monthlyHours} targetHours={20} />
+          <MonthlyProgress jukuHours={jukuHours} gymCount={gymCount} />
         </section>
 
         {/* レベル */}
