@@ -228,11 +228,14 @@ function setupTrigger() {
     }
   });
 
-  // 塾・セントラル両方を30分ごとに処理
+  // 塾・セントラル両方を毎日20時に処理
   ScriptApp.newTrigger('processAllEmails')
     .timeBased()
-    .everyMinutes(30)
+    .everyDays(1)
+    .atHour(20)
+    .nearMinute(0)
+    .inTimezone('Asia/Tokyo')
     .create();
 
-  console.log('トリガー設定完了: 30分ごとに processAllEmails を実行');
+  console.log('トリガー設定完了: 毎日20時に processAllEmails を実行');
 }
